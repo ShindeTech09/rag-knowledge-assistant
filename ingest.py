@@ -32,6 +32,26 @@ def load_single_doc(file_path:str) -> List[Document]:
     
     raise ValueError(f"Unsupported file extension: {ext}")
 
+
+def load_documents_from_folder(folder_path:str) -> List[Document]:
+    all_docs: List[Document] = []
+
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+
+        if os.path.isfile(file_path):
+            ext = os.path.splitext(filename)[1].lower()
+
+            if ext in SUPPORTED_EXTENSIONS:
+                docs = load_single_doc(file_path)
+
+                for doc in docs:
+                    doc.metadata["source"] = filename
+                
+                all_docs.extend(docs)
+    
+    return all_docs
+
 def split_documents(documents):
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=500,
@@ -42,36 +62,36 @@ def split_documents(documents):
 
 
 
-if __name__ == "__main__":
-    docs = load_documents("data/sample.pdf")
-    print(f"Loaded {len(docs)} pages")
+# if __name__ == "__main__":
+#     # docs = load_documents("data/sample.pdf")
+#     print(f"Loaded {len(docs)} pages")
 
-    chunks = split_documents(docs)
-    print(f"Created {len(chunks)} chunks")
+#     chunks = split_documents(docs)
+#     print(f"Created {len(chunks)} chunks")
 
-    embeddings = embed_documents(chunks)
-    print('*'*20)
-    print(f"Generated {len(embeddings)} embeddings")
-    print(f"Embedding Vector Length: {len(embeddings[0])}")
-    print('*'*20)
+#     embeddings = embed_documents(chunks)
+#     print('*'*20)
+#     print(f"Generated {len(embeddings)} embeddings")
+#     print(f"Embedding Vector Length: {len(embeddings[0])}")
+#     print('*'*20)
 
-    vector_store = build_vector_store(chunks)
+#     vector_store = build_vector_store(chunks)
 
-    # query = "What is the document about?"
-    # results = search_vector_store(vector_store, query)
+#     # query = "What is the document about?"
+#     # results = search_vector_store(vector_store, query)
 
-    while True: 
-        question = input("\nAsk a question (or type exit to quit):")
-        if question.lower() =="exit":
-            break
+#     while True: 
+#         question = input("\nAsk a question (or type exit to quit):")
+#         if question.lower() =="exit":
+#             break
 
-        answer = answer_question(vector_store, question)
+#         answer = answer_question(vector_store, question)
 
-        print(f"\nAnswer: {answer}")
+#         print(f"\nAnswer: {answer}")
     
 
-    # print("\nTop Retrieved Chunks:\n")
-    # for i,doc in enumerate(results, 1):
-    #     print(f"------- Result {i} -------")
-    #     print(doc.page_content[:500])
+#     # print("\nTop Retrieved Chunks:\n")
+#     # for i,doc in enumerate(results, 1):
+#     #     print(f"------- Result {i} -------")
+#     #     print(doc.page_content[:500])
 

@@ -2,12 +2,11 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
 from agent_graph import build_agent_graph
-from ingest import load_documents, split_documents
+from ingest import load_documents_from_folder, split_documents
 from vector_store import build_vector_store
 from agent_state import AgentState
 
 app = FastAPI(title="RAG Knowledge Assistant")
-
 
 vector_store = None
 agent = None
@@ -28,7 +27,7 @@ async def lifespan(app:FastAPI):
 
     print("Initializing RAG system......")
 
-    docs = load_documents("data/sample.pdf")
+    docs = load_documents_from_folder("data")
 
     chunks = split_documents(docs)
 
@@ -50,4 +49,4 @@ app = FastAPI(title="RAG Knowledge Assistant", lifespan=lifespan)
 @app.post("/ask", response_model=AnswerResponse)
 async def ask_question(request: QuestionRequest):
     result = await agent.ainvoke(AgentState(question=request.question)) 
-    return {"answer": result["answer"]} 
+    return {"answer": result["answer"]}
